@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": "io.github.sergio3392.twa",
-        "sha256_cert_fingerprints": ["11:6E:FE:62:D1:CF:69:0B:EF:C6:D3:69:19:E4:80:38:F1:9A:38:A6:0C:A7:40:87:4F:AA:88:0B:32:6B:9B:30"]
+        "package_name": "io.github.sergio3392.fiananzas",
+        "sha256_cert_fingerprints": ["72:32:55:C9:A2:1E:16:88:41:0F:C5:32:60:A4:92:A6:C2:34:A2:32:7E:E0:AD:BC:6E:3F:A5:CF:AD:8A:05:44"]
       }
     }]
