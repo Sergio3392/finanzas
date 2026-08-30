@@ -72,10 +72,17 @@
     overflow:hidden;
   }
   .balance-card .eyebrow{ font-family: var(--font-mono); font-size:11px; letter-spacing:0.16em; color:var(--muted); text-transform:uppercase; }
+  .balance-card-head{ display:flex; align-items:center; justify-content:space-between; }
+  .eye-btn{
+    background: none; border: none; color: var(--muted); font-size: 17px; cursor: pointer;
+    padding: 2px 4px; line-height:1; opacity:0.85;
+  }
+  .eye-btn:active{ opacity:1; }
   .balance-amount{
     font-family: var(--font-mono); font-weight:600; font-size:38px; color: var(--gold);
     margin-top: 6px; letter-spacing: -0.01em;
   }
+  .balance-amount.masked{ letter-spacing: 2px; }
   .ticker{
     margin-top:14px; display:flex; gap:3px; align-items:flex-end; height:14px; opacity:0.55;
   }
@@ -123,12 +130,37 @@
 
   .account-card{
     background: var(--surface); border:1px solid var(--border); border-radius:14px;
-    padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:12px;
+    padding:14px 16px; margin-bottom:10px;
   }
+  .account-main-row{ display:flex; align-items:center; gap:12px; }
   .account-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
   .account-name{ font-weight:500; font-size:14.5px; }
   .account-type{ font-family: var(--font-mono); font-size:11px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.06em;}
   .account-balance{ font-family: var(--font-mono); font-weight:600; font-size:15px; margin-left:auto; }
+  .account-expand-btn{
+    background:none; border:none; color:var(--muted); font-size:13px; padding:4px 2px 4px 6px; cursor:pointer;
+    transition: transform .15s ease;
+  }
+  .account-expand-btn.open{ transform: rotate(180deg); }
+
+  .account-available{
+    font-family: var(--font-mono); font-size:11.5px; color: var(--muted); margin-top:8px; padding-left:22px;
+  }
+  .account-available b{ color: var(--paper); font-weight:600; }
+
+  .subaccounts-wrap{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); display:none; }
+  .subaccounts-wrap.open{ display:block; }
+  .subaccount-row{
+    display:flex; align-items:center; gap:10px; padding:8px 4px 8px 22px;
+  }
+  .subaccount-dot{ width:6px; height:6px; border-radius:50%; background: var(--muted); flex-shrink:0; }
+  .subaccount-name{ font-size:13px; flex:1; }
+  .subaccount-balance{ font-family: var(--font-mono); font-size:13px; font-weight:600; color: var(--paper); }
+  .subaccount-del{ background:none; border:none; color:var(--muted); font-size:14px; padding:2px 2px 2px 8px; cursor:pointer; }
+  .add-subaccount-btn{
+    margin-top:6px; margin-left:22px; background:none; border:none; color: var(--gold);
+    font-family: var(--font-mono); font-size:11.5px; cursor:pointer; padding:6px 0;
+  }
 
   .btn{
     font-family: var(--font-body); font-weight:600; font-size:14px; border:none; border-radius:12px;
@@ -260,7 +292,10 @@
     <!-- RESUMEN -->
     <section id="view-resumen" class="view active">
       <div class="balance-card">
-        <div class="eyebrow">Saldo total</div>
+        <div class="balance-card-head">
+          <div class="eyebrow">Saldo total</div>
+          <button class="eye-btn" id="eye-btn-resumen" onclick="toggleBalances()" aria-label="Mostrar u ocultar saldo">👁</button>
+        </div>
         <div class="balance-amount" id="total-balance">$0.00</div>
         <div class="ticker">
           <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -290,7 +325,10 @@
     <section id="view-cuentas" class="view">
       <div class="section-title">Patrimonio total</div>
       <div class="balance-card" style="margin-bottom:14px;">
-        <div class="eyebrow">Suma de cuentas</div>
+        <div class="balance-card-head">
+          <div class="eyebrow">Suma de cuentas</div>
+          <button class="eye-btn" id="eye-btn-cuentas" onclick="toggleBalances()" aria-label="Mostrar u ocultar saldo">👁</button>
+        </div>
         <div class="balance-amount" id="accounts-total" style="font-size:28px;">$0.00</div>
       </div>
       <div id="accounts-list"></div>
@@ -377,6 +415,28 @@
   </div>
 </div>
 
+<!-- MODAL: apartado / subcuenta -->
+<div class="modal-overlay" id="subaccount-modal">
+  <div class="modal-sheet">
+    <div class="modal-title">Nuevo apartado</div>
+    <div style="font-family:var(--font-mono); font-size:11.5px; color:var(--muted); margin-bottom:16px; line-height:1.5;">
+      Un apartado separa una parte del saldo de la cuenta para un fin específico (ej. "Vacaciones"). No crea dinero nuevo, solo lo organiza dentro de la cuenta.
+    </div>
+    <div class="field">
+      <label>Nombre del apartado</label>
+      <input type="text" id="sub-name" placeholder="Ej. Vacaciones, Emergencias">
+    </div>
+    <div class="field">
+      <label>Monto apartado</label>
+      <input type="number" inputmode="decimal" id="sub-balance" placeholder="0.00" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('subaccount-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSubaccount()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: ajustes / seguridad -->
 <div class="modal-overlay" id="settings-modal">
   <div class="modal-sheet">
@@ -409,14 +469,43 @@ let state = { accounts: [], transactions: [] , budgets: {} };
 let currentTxType = 'ingreso';
 const STORAGE_KEY = 'mi-dinero:state';
 
+// --- Ocultar/mostrar balances ---
+const HIDE_BALANCES_KEY = 'mi-dinero:hideBalances';
+let balancesHidden = false;
+let expandedAccounts = new Set();
+let currentSubaccountAccountId = null;
+
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function fmt(n){ return new Intl.NumberFormat('es-MX', {style:'currency', currency:'MXN'}).format(n||0); }
+function displayAmount(n){ return balancesHidden ? '••••••' : fmt(n); }
+
+function loadHideBalancesPref(){
+  try{ balancesHidden = localStorage.getItem(HIDE_BALANCES_KEY) === '1'; }
+  catch(e){ balancesHidden = false; }
+}
+function toggleBalances(){
+  balancesHidden = !balancesHidden;
+  try{ localStorage.setItem(HIDE_BALANCES_KEY, balancesHidden ? '1' : '0'); }catch(e){}
+  updateEyeIcons();
+  renderAll();
+}
+function updateEyeIcons(){
+  const icon = balancesHidden ? '🙈' : '👁';
+  const b1 = document.getElementById('eye-btn-resumen');
+  const b2 = document.getElementById('eye-btn-cuentas');
+  if(b1) b1.textContent = icon;
+  if(b2) b2.textContent = icon;
+}
 
 async function loadState(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){ state = JSON.parse(raw); }
   }catch(e){ /* no hay datos guardados aún */ }
+  // Compatibilidad: asegura que cuentas viejas tengan arreglo de subcuentas
+  state.accounts.forEach(a=>{ if(!Array.isArray(a.subaccounts)) a.subaccounts = []; });
+  loadHideBalancesPref();
+  updateEyeIcons();
   renderAll();
 }
 async function saveState(){
@@ -651,17 +740,51 @@ async function saveAccount(){
   const type = document.getElementById('acc-type').value;
   const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
   if(!name){ alert('Escribe un nombre para la cuenta.'); return; }
-  state.accounts.push({ id: uid(), name, type, balance, color: ACC_COLORS[type] || '#8791B8' });
+  state.accounts.push({ id: uid(), name, type, balance, color: ACC_COLORS[type] || '#8791B8', subaccounts: [] });
   await saveState();
   closeModal('account-modal');
   renderAll();
 }
 function deleteAccount(id){
-  if(!confirm('Esto también eliminará los movimientos de esta cuenta. ¿Continuar?')) return;
+  if(!confirm('Esto también eliminará los movimientos y apartados de esta cuenta. ¿Continuar?')) return;
   state.accounts = state.accounts.filter(a=>a.id!==id);
   state.transactions = state.transactions.filter(t=>t.accountId!==id);
   saveState();
   renderAll();
+}
+
+// --- Apartados / subcuentas ---
+function toggleAccountExpand(accId){
+  if(expandedAccounts.has(accId)) expandedAccounts.delete(accId);
+  else expandedAccounts.add(accId);
+  renderCuentas();
+}
+function openSubaccountModal(accId){
+  currentSubaccountAccountId = accId;
+  document.getElementById('sub-name').value = '';
+  document.getElementById('sub-balance').value = '';
+  document.getElementById('subaccount-modal').classList.add('active');
+}
+async function saveSubaccount(){
+  const name = document.getElementById('sub-name').value.trim();
+  const balance = parseFloat(document.getElementById('sub-balance').value) || 0;
+  if(!name){ alert('Escribe un nombre para el apartado.'); return; }
+  const acc = state.accounts.find(a=>a.id===currentSubaccountAccountId);
+  if(!acc) return;
+  if(!Array.isArray(acc.subaccounts)) acc.subaccounts = [];
+  acc.subaccounts.push({ id: uid(), name, balance });
+  expandedAccounts.add(acc.id);
+  await saveState();
+  closeModal('subaccount-modal');
+  renderCuentas();
+}
+function deleteSubaccount(accId, subId){
+  const acc = state.accounts.find(a=>a.id===accId);
+  if(!acc) return;
+  if(!confirm('¿Eliminar este apartado? El monto vuelve a quedar disponible en la cuenta.')) return;
+  acc.subaccounts = acc.subaccounts.filter(s=>s.id!==subId);
+  saveState();
+  renderCuentas();
 }
 
 function isThisMonth(dateStr){
@@ -681,7 +804,7 @@ function txRowHTML(tx, showDelete){
       <div class="row-title">${tx.category}${tx.note ? ' · '+escapeHtml(tx.note) : ''}</div>
       <div class="row-sub">${tx.date} · ${acc ? acc.name : 'Cuenta eliminada'}</div>
     </div>
-    <div class="row-amount ${tx.type==='ingreso'?'income':'expense'}">${sign}${fmt(tx.amount)}</div>
+    <div class="row-amount ${tx.type==='ingreso'?'income':'expense'}">${balancesHidden ? '••••' : sign+fmt(tx.amount)}</div>
     ${showDelete ? `<button class="row-del" onclick="deleteTransaction('${tx.id}')">✕</button>` : ''}
   </div>`;
 }
@@ -689,13 +812,15 @@ function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;'
 
 function renderResumen(){
   const total = state.accounts.reduce((s,a)=>s+a.balance,0);
-  document.getElementById('total-balance').textContent = fmt(total);
+  const totalEl = document.getElementById('total-balance');
+  totalEl.textContent = displayAmount(total);
+  totalEl.classList.toggle('masked', balancesHidden);
 
   const monthTx = state.transactions.filter(t=>isThisMonth(t.date));
   const income = monthTx.filter(t=>t.type==='ingreso').reduce((s,t)=>s+t.amount,0);
   const expense = monthTx.filter(t=>t.type==='gasto').reduce((s,t)=>s+t.amount,0);
-  document.getElementById('month-income').textContent = fmt(income);
-  document.getElementById('month-expense').textContent = fmt(expense);
+  document.getElementById('month-income').textContent = displayAmount(income);
+  document.getElementById('month-expense').textContent = displayAmount(expense);
 
   const recent = [...state.transactions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
   const list = document.getElementById('recent-list');
@@ -718,21 +843,44 @@ function renderMovimientos(){
 
 function renderCuentas(){
   const total = state.accounts.reduce((s,a)=>s+a.balance,0);
-  document.getElementById('accounts-total').textContent = fmt(total);
+  const totalEl = document.getElementById('accounts-total');
+  totalEl.textContent = displayAmount(total);
+  totalEl.classList.toggle('masked', balancesHidden);
+
   const list = document.getElementById('accounts-list');
   if(state.accounts.length===0){
     list.innerHTML = `<div class="empty-state">No tienes cuentas todavía.<br>Agrega tu efectivo, banco o ahorros para empezar.</div>`;
   } else {
-    list.innerHTML = state.accounts.map(a=>`
+    list.innerHTML = state.accounts.map(a=>{
+      const subs = Array.isArray(a.subaccounts) ? a.subaccounts : [];
+      const reserved = subs.reduce((s,x)=>s+x.balance,0);
+      const available = a.balance - reserved;
+      const isOpen = expandedAccounts.has(a.id);
+      return `
       <div class="account-card">
-        <div class="account-dot" style="background:${a.color}"></div>
-        <div>
-          <div class="account-name">${escapeHtml(a.name)}</div>
-          <div class="account-type">${a.type}</div>
+        <div class="account-main-row">
+          <div class="account-dot" style="background:${a.color}"></div>
+          <div style="flex:1; min-width:0;">
+            <div class="account-name">${escapeHtml(a.name)}</div>
+            <div class="account-type">${a.type}</div>
+          </div>
+          <div class="account-balance">${displayAmount(a.balance)}</div>
+          <button class="account-expand-btn ${isOpen?'open':''}" onclick="toggleAccountExpand('${a.id}')" aria-label="Ver apartados">▾</button>
+          <button class="row-del" onclick="deleteAccount('${a.id}')">✕</button>
         </div>
-        <div class="account-balance">${fmt(a.balance)}</div>
-        <button class="row-del" onclick="deleteAccount('${a.id}')">✕</button>
-      </div>`).join('');
+        ${subs.length>0 ? `<div class="account-available">Disponible libre: <b>${displayAmount(available)}</b> · Apartado: <b>${displayAmount(reserved)}</b></div>` : ''}
+        <div class="subaccounts-wrap ${isOpen?'open':''}">
+          ${subs.length===0 ? `<div style="padding:6px 4px 6px 22px; font-family:var(--font-mono); font-size:11.5px; color:var(--muted);">Sin apartados todavía.</div>` : subs.map(s=>`
+            <div class="subaccount-row">
+              <div class="subaccount-dot"></div>
+              <div class="subaccount-name">${escapeHtml(s.name)}</div>
+              <div class="subaccount-balance">${displayAmount(s.balance)}</div>
+              <button class="subaccount-del" onclick="deleteSubaccount('${a.id}','${s.id}')">✕</button>
+            </div>`).join('')}
+          <button class="add-subaccount-btn" onclick="openSubaccountModal('${a.id}')">+ Agregar apartado</button>
+        </div>
+      </div>`;
+    }).join('');
   }
 }
 
@@ -747,7 +895,7 @@ function renderPresupuesto(){
     return `<div class="budget-item">
       <div class="budget-head">
         <div class="budget-name">${cat.icon} ${cat.name}</div>
-        <div class="budget-nums">${fmt(spent)} ${limit>0 ? '/ '+fmt(limit) : ''}</div>
+        <div class="budget-nums">${displayAmount(spent)} ${limit>0 ? '/ '+displayAmount(limit) : ''}</div>
       </div>
       <div class="budget-bar-track"><div class="budget-bar-fill ${over?'over':''}" style="width:${limit>0?pct:0}%"></div></div>
       <div style="margin-top:6px; display:flex; justify-content:flex-end;">
