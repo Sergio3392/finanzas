@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.sergio3392.finanzas",
-        "sha256_cert_fingerprints": ["72:32:55:C9:A2:1E:16:88:41:0F:C5:32:60:A4:92:A6:C2:34:A2:32:7E:E0:AD:BC:6E:3F:A5:CF:AD:8A:05:44"]
+        "sha256_cert_fingerprints": ["37:D1:63:F1:1A:3E:9E:28:30:8F:70:10:AC:77:DD:A7:45:54:A8:B0:28:02:29:B2:E9:40:9B:CB:E7:90:D3:BE"]
       }
     }]
